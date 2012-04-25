@@ -1,0 +1,38 @@
+<html>
+<head>
+    <title>Search</title>
+</head>
+<body>
+    <h1>Search Publications</h1>
+    {% if errors %}
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form action="" method="get">
+        <input type="text" name="q" value="{{querry}}">
+        <input type="submit" value="Search">
+    </form>
+<hr>
+
+{% if search %}
+
+    {% if publications %}
+        <b>{{publications|length}} publication{{publications|pluralize}} found</b>
+        <table>
+            {% for pub in publications %}
+            <tr>
+                <td>{{pub.id_padrao}}</td>
+                <td>{{pub.titulo}}</td>
+            <tr>
+
+            {% endfor %}
+    {% else %}
+        Any publications found to search {{querry}}
+        </table>
+    {% endif %}
+{% endif %}
+</body>
+</html>
