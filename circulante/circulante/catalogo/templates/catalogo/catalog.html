@@ -16,6 +16,13 @@
         <table border="1">
             {{form.as_table}}
             <tr>
+                <td colspan=2>
+                    <table border="1">
+                        {{formset.as_table}}
+                    </table>
+                </td>
+            </tr>
+            <tr>
                 <td><input type="submit" value="OK"></td>
             </tr>
         </table>

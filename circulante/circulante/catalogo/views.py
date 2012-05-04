@@ -1,12 +1,13 @@
 # coding:utf-8
 
-from .models import Publicacao
-from django.shortcuts import render
+from .models import Publicacao, Credito
+from django.shortcuts import render, get_object_or_404
 from isbn import isValidISBN10, validatedISBN10
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-
+from django.forms.models import inlineformset_factory
 from .forms import PublicacaoModelForm
+from django.utils.http import urlquote
 
 def search(request):
     errors = []
@@ -15,9 +16,7 @@ def search(request):
     if 'q' in request.GET:
         q = request.GET['q']
         if not q:
-            errors.append(u'Enter a search term.')
-        elif len(q) > 30:
-            errors.append(u'Please enter at most 30 characters.')
+            errors.append(u'Enter with a search term.')
         else:
             isbn = validatedISBN10(q)
             if isbn:
@@ -31,18 +30,44 @@ def search(request):
     return render(request,'catalogo/search.html',vars_template)
     
 def catalog(request):
+    CreditoInlineFormSet = inlineformset_factory(Publicacao, Credito)
     errors = []
-    if request.method != 'POST':
+    if request.method == 'GET':
         form = PublicacaoModelForm()
-    else:
+        formset = CreditoInlineFormSet()
+    elif request.method == 'POST':
         form = PublicacaoModelForm(request.POST)
+        formset = CreditoInlineFormSet(request.POST)
         if form.is_valid():
-            isbn = validatedISBN10(form.cleaned_data['id_padrao'])
+            #isbn = validatedISBN10(form.cleaned_data['id_padrao'])
+            isbn = form.cleaned_data['id_padrao']
             if isbn:
-                form.save()
-                titulo = form.cleaned_data['titulo']
-                return HttpResponseRedirect(reverse('search')+'?q='+titulo)
+                pub = form.save()
+                formset = CreditoInlineFormSet(request.POST,instance = pub)
+                formset.save()
+                title = form.cleaned_data['titulo']
+                return HttpResponseRedirect(reverse('search')+'?q='+urlquote(title))
             else:
-                errors.append(u'ISBN invalid.')
+                errors.append(u'Please, insert a ISBN.')
 
-    return render(request,'catalogo/catalog.html',{'form': form,'errors':errors})
+    return render(request,'catalogo/catalog.html',{'form': form,'errors':errors,'formset':formset})
+    
+    
+def edit(request, primary_key):
+    CreditoInlineFormSet = inlineformset_factory(Publicacao, Credito)
+    pub = get_object_or_404(Publicacao, pk=primary_key)
+    
+    if request.method == 'GET':
+        form = PublicacaoModelForm(instance=pub)
+        formset = CreditoInlineFormSet(instance=pub)
+    elif request.method == 'POST':
+        form = PublicacaoModelForm(request.POST, instance=pub)
+        formset = CreditoInlineFormSet(request.POST,instance = pub)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset = CreditoInlineFormSet(request.POST,instance = pub)
+            formset.save()
+            title = form.cleaned_data['titulo']
+            return HttpResponseRedirect(reverse('search')+'?q='+urlquote(title))
+            
+    return render(request,'catalogo/catalog.html',{'form': form,'formset':formset})

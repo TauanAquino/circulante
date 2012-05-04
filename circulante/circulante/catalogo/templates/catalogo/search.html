@@ -4,6 +4,11 @@
 </head>
 <body>
     <h1>Search Publications</h1>
+    
+    <p>
+        <a href="{% url catalog %}"> Insert new publication</a>
+    </p>
+    
     {% if errors %}
         <ul>
             {% for error in errors %}
@@ -25,7 +30,7 @@
             {% for pub in publications %}
             <tr>
                 <td>{{pub.id_padrao}}</td>
-                <td>{{pub.titulo}}</td>
+                <td><a href="{% url edit pub.pk %}">{{pub.titulo}}</a></td>
             <tr>
 
             {% endfor %}
