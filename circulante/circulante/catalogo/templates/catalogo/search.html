@@ -1,8 +1,9 @@
-<html>
-<head>
-    <title>Search</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block chamada %}Search{% endblock %}
+
+{% block corpo %}
+
     <h1>Search Publications</h1>
     
     <p>
@@ -39,5 +40,6 @@
         </table>
     {% endif %}
 {% endif %}
-</body>
-</html>
+
+{% endblock corpo %}
+
